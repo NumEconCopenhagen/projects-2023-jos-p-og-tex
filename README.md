@@ -1,9 +1,9 @@
-# \[Group name\]
+# \[Jos, P og Tex\]
 
 **Group members:**
-- A
-- B
-- C
+- Josefine Trangeled Pedersen
+- Pernille Nygaard Svendsen
+- Viktor Texel
 
 This repository contains  
 1. Inaugural project. 
