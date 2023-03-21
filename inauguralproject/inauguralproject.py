@@ -132,18 +132,15 @@ class HouseholdSpecializationModelClass:
     def solve(self,do_print=False):
         """ solve model continously """
 
-        par = self.par
-        sol = self.sol
-        opt = SimpleNamespace()  
+        par = model.par
+        sol = model.sol    
     
         # a. objective function (to minimize) 
-        obj = lambda x: -self.calc_utility(x[0],x[1], par.wF, par.sigma, par.alpha) # minimize -> negative of utility
+        obj = lambda x: -model.u_func(x[0],x[1]) # minimize -> negative of utility
         
         # b. constraints and bounds
-        time_constraint(x):  = lambda x:
-            return np.array([x[0] + x[1] - 24])
-        
-        constraints = ({'type':'ineq','fun':time_constraint})
+        budget_constraint = lambda x: par.m-par.p1*x[0]-par.p2*x[1] # violated if negative
+        constraints = ({'type':'ineq','fun':budget_constraint})
         bounds = ((1e-8,par.m/par.p1-1e-8),(1e-8,par.m/par.p2-1e-8))
     
         # why all these 1e-8? To avoid ever having x1 = 0 or x2 = 0
@@ -156,7 +153,6 @@ class HouseholdSpecializationModelClass:
         sol.x1 = result.x[0]
         sol.x2 = result.x[1]
         sol.u = model.u_func(sol.x1,sol.x2)
-        
 
     def solve_wF_vec(self,discrete=False):
         """ solve model for vector of female wages """
