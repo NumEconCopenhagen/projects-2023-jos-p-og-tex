@@ -136,7 +136,7 @@ class HouseholdSpecializationModelClass:
         sol = model.sol    
     
         # a. objective function (to minimize) 
-        obj = lambda x: -model.u_func(x[0],x[1]) # minimize -> negative of utility
+        obj = lambda x: -model.calc_utility(self,LM,HM,LF,HF) # minimize -> negative of utility
         
         # b. constraints and bounds
         budget_constraint = lambda x: par.m-par.p1*x[0]-par.p2*x[1] # violated if negative
