@@ -132,27 +132,29 @@ class HouseholdSpecializationModelClass:
     def solve(self,do_print=False):
         """ solve model continously """
 
-        par = model.par
-        sol = model.sol    
+        par = self.par
+        sol = self.sol    
     
         # a. objective function (to minimize) 
-        obj = lambda x: -model.calc_utility(self,LM,HM,LF,HF) # minimize -> negative of utility
+        obj = lambda x: -self.calc_utility(self,x[0],x[1],x[2],x[3]) # minimize -> negative of utility
         
         # b. constraints and bounds
-        budget_constraint = lambda x: par.m-par.p1*x[0]-par.p2*x[1] # violated if negative
-        constraints = ({'type':'ineq','fun':budget_constraint})
-        bounds = ((1e-8,par.m/par.p1-1e-8),(1e-8,par.m/par.p2-1e-8))
-    
-        # why all these 1e-8? To avoid ever having x1 = 0 or x2 = 0
-    
+        time_constraint_m = lambda x: 24-(x[0]+x[1]) # violated if negative
+        time_constraint_f = lambda x: 24-(x[2]+x[3]) # violated if negative
+        constraints = ({'type':'ineq','fun':time_constraint_m},{'type':'ineq','fun':time_constraint_f})
+        bounds = ((0,24),(0,24),(0,24),(0,24))
+        
         # c. call solver
-        x0 = [(par.m/par.p1)/2,(par.m/par.p2)/2]
-        result = optimize.minimize(obj,x0,method='SLSQP',bounds=bounds,constraints=constraints)
+        result = optimize.minimize(obj,method='SLSQP',bounds=bounds,constraints=constraints)
         
         # d. save
-        sol.x1 = result.x[0]
-        sol.x2 = result.x[1]
-        sol.u = model.u_func(sol.x1,sol.x2)
+        sol.LM = result.x[0]
+        sol.HM = result.x[1]
+        sol.LF = result.x[2]
+        sol.HF = result.x[3]
+        sol.u = model.u_func(sol.LM,sol.HM,sol.LF,sol.HF)
+                             
+
 
     def solve_wF_vec(self,discrete=False):
         """ solve model for vector of female wages """
