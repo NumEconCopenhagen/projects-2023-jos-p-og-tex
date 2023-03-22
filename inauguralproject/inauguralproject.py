@@ -202,7 +202,30 @@ class HouseholdSpecializationModelClass:
 
     
     
-    def estimate(self,alpha=None,sigma=None):
+    def extension(self,alpha=None,sigma=None):
         """ estimate alpha and sigma """
 
-        pass
+        par = self.par 
+        opt = SimpleNamespace()  
+
+        # a. objective function (to minimize) - including penalty to account for time constraints (for Nelder-Mead method)
+        def obj(x):
+            LM,HM,LF,HF=x
+            penalty=0
+            time_M = LM+HM
+            time_F = LF+HF
+            if time_M > 24 or time_F > 24:
+                penalty += 1000 * (max(time_M, time_F) - 24)
+            beta0,beta1 = self.run_regression()
+            self.par.alpha = 0.5
+            return -self.calc_utility(LM,HM,LF,HF) + penalty + (0.4-beta0)**2+(-0.1-beta1)**2
+        
+        # c. call solve
+        x0=[2,2,2,2] # initial guess
+        result = optimize.minimize(obj,x0,method='Nelder-Mead')
+        
+        # d. save results
+    
+        #opt.u = self.calc_utility(opt.LM,opt.HM,opt.LF,opt.HF)
+        
+        return opt
