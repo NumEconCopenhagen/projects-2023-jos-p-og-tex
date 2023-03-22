@@ -132,34 +132,58 @@ class HouseholdSpecializationModelClass:
     def solve(self,do_print=False):
         """ solve model continously """
 
-        par = self.par
-        sol = self.sol    
-    
-        # a. objective function (to minimize) 
-        obj = lambda x: -self.calc_utility(self,x[0],x[1],x[2],x[3]) # minimize -> negative of utility
+        par = self.par 
+        opt = SimpleNamespace()  
+
+        # a. objective function (to minimize) - including penalty to account for time constraints (for Nelder-Mead method)
+        def obj(x):
+            LM,HM,LF,HF=x
+            penalty=0
+            time_M = LM+HM
+            time_F = LF+HF
+            if time_M > 24 or time_F > 24:
+                penalty += 1000 * (max(time_M, time_F) - 24)
+            return -self.calc_utility(LM,HM,LF,HF) + penalty
+        
+        # OLD: With methode SLSQP and constraints, but this method could not find the correct results
+        #obj = lambda x: -self.calc_utility(x[0],x[1],x[2],x[3]) # minimize -> negative of utility
         
         # b. constraints and bounds
-        time_constraint_m = lambda x: 24-(x[0]+x[1]) # violated if negative
-        time_constraint_f = lambda x: 24-(x[2]+x[3]) # violated if negative
-        constraints = ({'type':'ineq','fun':time_constraint_m},{'type':'ineq','fun':time_constraint_f})
-        bounds = ((0,24),(0,24),(0,24),(0,24))
+        #time_constraint_m = lambda x: 24-x[0]-x[1] # violated if negative
+        #time_constraint_f = lambda x: 24-x[2]-x[3] # violated if negative
+        #constraints = [{'type':'ineq','fun':time_constraint_m},{'type':'ineq','fun':time_constraint_f}]
+        #bounds = [(0,24),(0,24),(0,24),(0,24)]
         
-        # c. call solver
-        result = optimize.minimize(obj,method='SLSQP',bounds=bounds,constraints=constraints)
+        # c. call solve
+        x0=[2,2,2,2] # initial guess
+        result = optimize.minimize(obj,x0,method='Nelder-Mead')
         
-        # d. save
-        sol.LM = result.x[0]
-        sol.HM = result.x[1]
-        sol.LF = result.x[2]
-        sol.HF = result.x[3]
-        sol.u = model.u_func(sol.LM,sol.HM,sol.LF,sol.HF)
-                             
+        # d. save results
+        opt.LM = result.x[0]
+        opt.HM = result.x[1]
+        opt.LF = result.x[2]
+        opt.HF = result.x[3]
+        #opt.u = self.calc_utility(opt.LM,opt.HM,opt.LF,opt.HF)
+        
+        return opt
 
 
     def solve_wF_vec(self,discrete=False):
         """ solve model for vector of female wages """
 
-        pass
+        par = self.par
+        sol = self.sol
+
+        for i,wF in enumerate(par.wF_vec):    
+            par.wF = wF
+            
+            # Running the model and replacing the values in the vectors with the optimal values
+            opt = self.solve()
+            sol.HF_vec[i]=opt.HF
+            sol.HM_vec[i]=opt.HM
+
+        return sol.HF_vec, sol.HM_vec
+
 
     def run_regression(self):
         """ run regression """
@@ -167,10 +191,16 @@ class HouseholdSpecializationModelClass:
         par = self.par
         sol = self.sol
 
+        self.solve_wF_vec()
+
         x = np.log(par.wF_vec)
         y = np.log(sol.HF_vec/sol.HM_vec)
         A = np.vstack([np.ones(x.size),x]).T
-        sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0]
+        sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0] 
+
+        return sol.beta0,sol.beta1
+
+    
     
     def estimate(self,alpha=None,sigma=None):
         """ estimate alpha and sigma """
