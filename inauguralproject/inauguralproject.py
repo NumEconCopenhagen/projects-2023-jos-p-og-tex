@@ -76,7 +76,6 @@ class HouseholdSpecializationModelClass:
             H = min(HM,HF)
         else:
             H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma) + par.alpha*HF**((par.sigma-1)/par.sigma))**(par.sigma/(par.sigma-1)) 
-        
 
         # c. total consumption utility
         Q = C**par.omega*H**(1-par.omega)
@@ -150,16 +149,7 @@ class HouseholdSpecializationModelClass:
                 penalty += 1000 * (max(time_M, time_F) - 24)
             return -self.calc_utility(LM,HM,LF,HF) + penalty
         
-        # OLD: With methode SLSQP and constraints, but this method could not find the correct results
-        #obj = lambda x: -self.calc_utility(x[0],x[1],x[2],x[3]) # minimize -> negative of utility
-        
-        # b. constraints and bounds
-        #time_constraint_m = lambda x: 24-x[0]-x[1] # violated if negative
-        #time_constraint_f = lambda x: 24-x[2]-x[3] # violated if negative
-        #constraints = [{'type':'ineq','fun':time_constraint_m},{'type':'ineq','fun':time_constraint_f}]
-        #bounds = [(0,24),(0,24),(0,24),(0,24)]
-        
-        # c. call solve
+        # b. call solve
         x0=[2,2,2,2] # initial guess
         result = optimize.minimize(obj,x0,method='Nelder-Mead')
         
@@ -228,7 +218,6 @@ class HouseholdSpecializationModelClass:
         else:
             H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma) + par.alpha*HF**((par.sigma-1)/par.sigma))**(par.sigma/(par.sigma-1)) 
         
-
         # c. total consumption utility
         Q = C**par.omega*H**(1-par.omega)
         utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho)
@@ -244,8 +233,10 @@ class HouseholdSpecializationModelClass:
         
         return utility - disutility + pref_H_work
     
+
+    # Solving the model as before, but know using the extended version
     def extension(self,alpha=None,sigma=None):
-        """ estimate alpha and sigma """
+        """ solve model continously """
 
         par = self.par 
         opt = SimpleNamespace()  
@@ -259,17 +250,8 @@ class HouseholdSpecializationModelClass:
             if time_M > 24 or time_F > 24:
                 penalty += 1000 * (max(time_M, time_F) - 24)
             return -self.calc_utility5(LM,HM,LF,HF) + penalty
-        
-        # OLD: With methode SLSQP and constraints, but this method could not find the correct results
-        #obj = lambda x: -self.calc_utility(x[0],x[1],x[2],x[3]) # minimize -> negative of utility
-        
-        # b. constraints and bounds
-        #time_constraint_m = lambda x: 24-x[0]-x[1] # violated if negative
-        #time_constraint_f = lambda x: 24-x[2]-x[3] # violated if negative
-        #constraints = [{'type':'ineq','fun':time_constraint_m},{'type':'ineq','fun':time_constraint_f}]
-        #bounds = [(0,24),(0,24),(0,24),(0,24)]
-        
-        # c. call solve
+
+        # b. call solve
         x0=[2,2,2,2] # initial guess
         result = optimize.minimize(obj,x0,method='Nelder-Mead')
         
@@ -282,6 +264,7 @@ class HouseholdSpecializationModelClass:
         
         return opt
 
+    # Solving the model for a vector of female wages
     def solve_wF_vec5(self,discrete=False):
         """ solve model for vector of female wages """
 
@@ -297,28 +280,8 @@ class HouseholdSpecializationModelClass:
             sol.HM_vec[i]=opt.HM
 
         return sol.HF_vec, sol.HM_vec
-
-
-    def run_regression5(self):
-        """ run regression """
-
-        par = self.par
-        sol = self.sol
-
-        for k in range(-1,1):
-            k = k/100.0    
-            par.k = k
-            
-            self.solve_wF_vec5()
-
-            x = np.log(par.wF_vec)
-            y = np.log(sol.HF_vec/sol.HM_vec)
-            A = np.vstack([np.ones(x.size),x]).T
-            sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0] 
-
-        return sol.beta0,sol.beta1
     
-
+    # Defining a method to find the optimal value of k to match the target values for beta0 and beta1
     def optimalk(self,do_print=False):
         """ solve model continously """
 
