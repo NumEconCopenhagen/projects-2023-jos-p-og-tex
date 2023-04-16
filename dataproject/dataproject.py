@@ -140,8 +140,8 @@ def correlation(df):
 
     #calculation of correlation coefficient and p-value between precipitation and the change in OMXC25
     correlation_coefficient, p_value = pearsonr(precip, change_in_stock)
-    print("Correlation coefficient:", correlation_coefficient)
-    print("p-value:", p_value)
+    print(f"Correlation coefficient: {correlation_coefficient:.2f}")
+    print(f"p-value: {p_value:.2f}")
 
     return None
 
