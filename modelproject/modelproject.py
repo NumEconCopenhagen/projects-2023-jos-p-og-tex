@@ -26,12 +26,14 @@ class MalthusModelClass():
         par = self.par
 
         # a. household
-        par.beta = np.nan # discount factor
-        par.lambd = np.nan # budget constraint -ret lige
+        par.beta = np.nan
+        par.lambd = np.nan
 
         # b. firms
-        par.alpha = 0.30 # capital weight      
-        par.mu = 0.2 # depreciation rate
+        par.alpha = 0.30    
+        par.mu = 0.2
+        par.A = 1
+        par.X = 1
 
         # c. initial
         par.L_lag_ini = 1.0
@@ -59,7 +61,7 @@ class MalthusModelClass():
 
         # a. find L
         ss.L = L_ss
-        Y,_,_ = production(par,1.0,ss.L)
+        Y,_,_ = production(par,ss.L)
 
         if do_print:
 
@@ -74,11 +76,11 @@ class MalthusModelClass():
         ss = self.ss
         path = self.path
         
-        # a. capital
+        # a. labor
         L = path.L
         L_lag = path.L_lag = np.insert(L[:-1],0,par.L_lag_ini)
 
-        # d. errors (also called H)
+        # b. errors (also called H)
         errors = np.nan*np.ones((par.Tpath))
         errors = L - ((1-par.beta)/par.lambd)*L_lag**(1-par.alpha)*(A*X)**par.alpha + (1-par.mu)*L_lag
         
@@ -115,9 +117,8 @@ class MalthusModelClass():
         eq_sys(x)
 
             
-def production(par,L_lag,A_lag=1,X_lag=1):
+def production(par,L_lag):
     """ production """
 
-    Y = L_lag**(1-par.alpha)*(A_lag*X_lag)**par.alpha
-    
+    Y = L_lag**(1-par.alpha)*(par.A*par.X)**par.alpha
     return Y           
