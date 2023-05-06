@@ -19,6 +19,7 @@ class MalthusModelClass():
         if do_print: print('calling .allocate()')
         self.allocate()
     
+
     def setup(self):
         """ baseline parameters """
 
@@ -38,6 +39,7 @@ class MalthusModelClass():
         # d. misc
         par.Tpath = 500 # length of transition path, "truncation horizon"
 
+
     def allocate(self):
         """ allocate arrays for transition path """
         
@@ -48,6 +50,7 @@ class MalthusModelClass():
         for varname in allvarnames:
             path.__dict__[varname] =  np.nan*np.ones(par.Tpath)
 
+
     def find_steady_state(self,L_ss,do_print=True):
         """ find steady state """
 
@@ -56,12 +59,13 @@ class MalthusModelClass():
 
         # a. find L
         ss.L = L_ss
-        L,_,_ = production(par,1.0,ss.L)
+        Y,_,_ = production(par,1.0,ss.L)
 
         if do_print:
 
             print(f'L_ss = {ss.L:.4f}')
             print(f'beta = {par.beta:.4f}')
+
 
     def evaluate_path_errors(self):
         """ evaluate errors along transition path """
@@ -76,9 +80,9 @@ class MalthusModelClass():
 
         # d. errors (also called H)
         errors = np.nan*np.ones((par.Tpath))
-        errors[:] = L - ((1-par.beta)/par.lambd)*L_lag**(1-par.alpha)*(A*X)**par.alpha + (1-par.mu)*L_lag
+        errors = L - ((1-par.beta)/par.lambd)*L_lag**(1-par.alpha)*(A*X)**par.alpha + (1-par.mu)*L_lag
         
-        return errors.ravel()
+        return errors
         
         
     def solve(self,do_print=True):
@@ -92,20 +96,19 @@ class MalthusModelClass():
         def eq_sys(x):
             
             # i. update
-            x = x.reshape((1,par.Tpath)
-            path.L[:] = x[1,:]
+            x = x.reshape(par.Tpath)
+            path.L = x
             
             # ii. return errors
             return self.evaluate_path_errors()
 
         # b. initial guess
-        x0 = np.nan*np.ones((1,par.Tpath))
-        x0[1,:] = ss.L
-        x0 = x0.ravel()
+        x0 = np.nan*np.ones(par.Tpath)
+        x0 = ss.L
 
         # c. call solver    
-        root = optimize.root(eq_sys,x0,method='hybr',options={'factor':1.0})
-     
+        root = optimize.root_scalar(eq_sys,bracket=[0.1,1000],method='brentq')
+
         x = root.x
         
         # d. final evaluation
