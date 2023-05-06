@@ -31,8 +31,8 @@ class MalthusModelClass():
 
         # b. firms
         par.alpha = 0.30    
-        par.mu = 0.2
-        par.A = 1
+        par.mu = 0.8
+        par.A = 4
         par.X = 1
 
         # c. initial
@@ -61,12 +61,11 @@ class MalthusModelClass():
 
         # a. find L
         ss.L = L_ss
-        Y,_,_ = production(par,ss.L)
+        Y = production(par,ss.L)
 
         if do_print:
 
             print(f'L_ss = {ss.L:.4f}')
-            print(f'beta = {par.beta:.4f}')
 
 
     def evaluate_path_errors(self):
@@ -98,7 +97,6 @@ class MalthusModelClass():
         def eq_sys(x):
             
             # i. update
-            x = x.reshape(par.Tpath)
             path.L = x
             
             # ii. return errors
