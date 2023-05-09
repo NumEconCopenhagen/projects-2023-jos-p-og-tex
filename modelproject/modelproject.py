@@ -61,23 +61,23 @@ def phase_diagram(par):
 
 
 
-def convergence(beta,lamb,mu,alpha,A,X,T,interactive=False):
+def convergence(beta,lamb,mu,alpha,A_val,X_val,T_val,interactive=False):
 
-    L_path = np.zeros(T)  # initialize a vector to store optimal L for each time period
+    L_path = np.zeros(T_val)  # initialize a vector to store optimal L for each time period
     L_path[0] = 0.1  # set the initial value of L in the vector
 
-    for i in range(1,T):
+    for i in range(1,T_val):
 
         # a. find next period L
-        L_next = ((1-beta)/lamb)*L_path[i-1]**(1-alpha)*(A*X)**(alpha)+(1-mu)*L_path[i-1]
+        L_next = ((1-beta)/lamb)*L_path[i-1]**(1-alpha)*(A_val*X_val)**(alpha)+(1-mu)*L_path[i-1]
 
         # b. store value
         L_path[i] = L_next
     
-    T_vec = np.linspace(0,T,T)
+    T_vec = np.linspace(0,T_val,T_val)
     fig = plt.figure()
 
-    obj_lss = lambda lss: lss - (((1-beta)/lamb)*lss**(1-alpha)*(A*X)**(alpha)+(1-mu)*lss)
+    obj_lss = lambda lss: lss - (((1-beta)/lamb)*lss**(1-alpha)*(A_val*X_val)**(alpha)+(1-mu)*lss)
 
     if interactive==False:
         # c. plot
