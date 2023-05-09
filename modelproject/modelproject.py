@@ -14,7 +14,7 @@ def solve(obj_lss,return_res=False):
     if return_res==True:
         return L_ss
     else:
-        print(f'The steady state for L is: {result.root:.3f}')
+        print(f'The steady state for L is: {result.root:.2f}')
 
 
 
@@ -25,7 +25,7 @@ def phase_diagram(par):
     N = 100
 
     # Max value of L_t
-    L_max = 2
+    L_max = 10
 
     # Create a vector x1 from 0 to x_max, with N values
     L_vec = np.linspace(0,L_max,N)
@@ -34,7 +34,7 @@ def phase_diagram(par):
     L2_vec = np.empty(N)
 
     def L_func(lss,par=par):
-        return par.eta*lss**(1-par.alpha)*(par.A*par.X)**(par.alpha)+(1-par.mu)*lss
+        return ((1-par.beta)/par.lamb)*lss**(1-par.alpha)*(par.A*par.X)**(par.alpha)+(1-par.mu)*lss
 
     # Fill out out the vector
     for i, lss in enumerate(L_vec):
@@ -52,16 +52,16 @@ def phase_diagram(par):
 
     # b. plot
     ax = fig.add_subplot(1,1,1)
-    ax.plot(L_vec,L2_vec);
-    ax.plot(L_vec,L3_vec);
+    ax.plot(L_vec,L2_vec)
+    ax.plot(L_vec,L3_vec)
 
-    ax.set_title('Phase diagram of the Malthus model')
+    ax.set_title('Phase diagram for labor in the Malthus model')
     ax.set_xlabel('$L_{t}$')
-    ax.set_ylabel('$L_{t+1}$');
+    ax.set_ylabel('$L_{t+1}$')
 
 
 
-def convergence(eta,mu,alpha,A,X,T,interactive=False):
+def convergence(beta,lamb,mu,alpha,A,X,T,interactive=False):
 
     L_path = np.zeros(T)  # initialize a vector to store optimal L for each time period
     L_path[0] = 0.1  # set the initial value of L in the vector
@@ -69,7 +69,7 @@ def convergence(eta,mu,alpha,A,X,T,interactive=False):
     for i in range(1,T):
 
         # a. find next period L
-        L_next = eta*L_path[i-1]**(1-alpha)*(A*X)**(alpha)+(1-mu)*L_path[i-1]
+        L_next = ((1-beta)/lamb)*L_path[i-1]**(1-alpha)*(A*X)**(alpha)+(1-mu)*L_path[i-1]
 
         # b. store value
         L_path[i] = L_next
@@ -77,7 +77,7 @@ def convergence(eta,mu,alpha,A,X,T,interactive=False):
     T_vec = np.linspace(0,T,T)
     fig = plt.figure()
 
-    obj_lss = lambda lss: lss - (eta*lss**(1-alpha)*(A*X)**(alpha)+(1-mu)*lss)
+    obj_lss = lambda lss: lss - (((1-beta)/lamb)*lss**(1-alpha)*(A*X)**(alpha)+(1-mu)*lss)
 
     if interactive==False:
         # c. plot
@@ -98,7 +98,7 @@ def convergence(eta,mu,alpha,A,X,T,interactive=False):
 
 
 
-def convergence_tech_shock(eta,mu,alpha,A,X,T,A_path):
+def convergence_tech_shock(beta,lamb,mu,alpha,A,X,T,A_path):
 
     L_path = np.zeros(T)  # initialize a vector to store optimal L for each time period
     L_path[0] = 0.1  # set the initial value of L in the vector
@@ -106,7 +106,7 @@ def convergence_tech_shock(eta,mu,alpha,A,X,T,A_path):
     for i in range(1,T):
 
         # a. find next period L
-        L_next = eta*L_path[i-1]**(1-alpha)*(A_path[i]*X)**(alpha)+(1-mu)*L_path[i-1]
+        L_next = ((1-beta)/lamb)*L_path[i-1]**(1-alpha)*(A_path[i]*X)**(alpha)+(1-mu)*L_path[i-1]
 
         # b. store value
         L_path[i] = L_next
@@ -114,7 +114,7 @@ def convergence_tech_shock(eta,mu,alpha,A,X,T,A_path):
     T_vec = np.linspace(0,T,T)
     fig = plt.figure()
 
-    obj_lss = lambda lss: lss - (eta*lss**(1-alpha)*(A*X)**(alpha)+(1-mu)*lss)
+    obj_lss = lambda lss: lss - (((1-beta)/lamb)*lss**(1-alpha)*(A*X)**(alpha)+(1-mu)*lss)
     
     # c. plot
     ax = fig.add_subplot(1,1,1)
