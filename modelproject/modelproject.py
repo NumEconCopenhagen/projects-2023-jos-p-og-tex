@@ -84,17 +84,17 @@ def convergence(beta,lamb,mu,alpha,A,X,T,interactive=False):
         ax = fig.add_subplot(1,1,1)
         ax.plot(T_vec,L_path)
         ax.axhline(solve(obj_lss,return_res=True),ls='--',color='black',label='analytical steady state')
-        ax.set_title('Phase diagram of the Malthus model')
-        ax.set_xlabel('$L_{t}$')
-        ax.set_ylabel('$L_{t+1}$')
+        ax.set_title('Convergence diagram for the Malthus model')
+        ax.set_xlabel('Time period')
+        ax.set_ylabel('Labor force/population')
 
     else:
         # c. plot
         ax = fig.add_subplot(1,1,1)
         ax.plot(T_vec,L_path)
-        ax.set_title('Phase diagram of the Malthus model')
-        ax.set_xlabel('$L_{t}$')
-        ax.set_ylabel('$L_{t+1}$');
+        ax.set_title('Convergence diagram for the Malthus model')
+        ax.set_xlabel('Time period')
+        ax.set_ylabel('Labor force/population')
 
 
 
@@ -120,11 +120,40 @@ def convergence_tech_shock(beta,lamb,mu,alpha,A,X,T,A_path):
     ax = fig.add_subplot(1,1,1)
     ax.plot(T_vec,L_path)
     ax.axhline(solve(obj_lss,return_res=True),ls='--',color='black',label='analytical steady state without shock')
-    ax.set_title('Phase diagram of the Malthus model')
-    ax.set_xlabel('$L_{t}$')
-    ax.set_ylabel('$L_{t+1}$')
+    ax.set_title('Convergence diagram for the Malthus model')
+    ax.set_xlabel('Time period')
+    ax.set_ylabel('Labor force/population')
 
     return L_path
+
+
+
+def convergence_extension(beta,lamb,mu,alpha,X,T):
+
+    L_path = np.zeros(T)  # initialize a vector to store optimal L for each time period
+    L_path[0] = 0.1  # set the initial value of L in the vector
+    A_path = np.zeros(T)
+    A_path[0] = 1  # set the initial value of L in the vector
+    A_path = np.power(1.02, np.arange(T))  # set the initial value of L in the vector
+
+    for i in range(1,T):
+
+        # a. find next period L
+        L_next = ((1-beta)/lamb)*L_path[i-1]**(1-alpha)*(A_path[i]*X)**(alpha)+(1-mu)*L_path[i-1]
+
+        # b. store value
+        L_path[i] = L_next
+    
+    T_vec = np.linspace(0,T,T)
+    fig = plt.figure()
+
+
+    # c. plot
+    ax = fig.add_subplot(1,1,1)
+    ax.plot(T_vec,L_path)
+    ax.set_title('Convergence diagram for the Malthus model')
+    ax.set_xlabel('Time period')
+    ax.set_ylabel('Labor force/population')
 
 
 
