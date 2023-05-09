@@ -1,6 +1,6 @@
 # Data analysis project
 
-Our project is titled **Rainy days in Copenhagen** and is about the danish bike habits and how they are affected by the weather conditions in Denmark.
+Our project is titled **Rainy days on the stock market** and is about how the average rainfall in Denmark affects the stock prices of the OMX-C25 stock index.
 
 The **results** of the project can be seen from running [dataproject.ipynb](dataproject.ipynb).
 
