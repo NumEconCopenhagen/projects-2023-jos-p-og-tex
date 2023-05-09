@@ -98,23 +98,23 @@ def convergence(beta,lamb,mu,alpha,A_val,X_val,T_val,interactive=False):
 
 
 
-def convergence_tech_shock(beta,lamb,mu,alpha,A,X,T,A_path):
+def convergence_tech_shock(par,A_path):
 
-    L_path = np.zeros(T)  # initialize a vector to store optimal L for each time period
+    L_path = np.zeros(par.T)  # initialize a vector to store optimal L for each time period
     L_path[0] = 0.1  # set the initial value of L in the vector
 
-    for i in range(1,T):
+    for i in range(1,par.T):
 
         # a. find next period L
-        L_next = ((1-beta)/lamb)*L_path[i-1]**(1-alpha)*(A_path[i]*X)**(alpha)+(1-mu)*L_path[i-1]
+        L_next = ((1-par.beta)/par.lamb)*L_path[i-1]**(1-par.alpha)*(A_path[i]*par.X)**(par.alpha)+(1-par.mu)*L_path[i-1]
 
         # b. store value
         L_path[i] = L_next
     
-    T_vec = np.linspace(0,T,T)
+    T_vec = np.linspace(0,par.T,par.T)
     fig = plt.figure()
 
-    obj_lss = lambda lss: lss - (((1-beta)/lamb)*lss**(1-alpha)*(A*X)**(alpha)+(1-mu)*lss)
+    obj_lss = lambda lss: lss - (((1-par.beta)/par.lamb)*lss**(1-par.alpha)*(par.A*par.X)**(par.alpha)+(1-par.mu)*lss)
     
     # c. plot
     ax = fig.add_subplot(1,1,1)
@@ -128,23 +128,23 @@ def convergence_tech_shock(beta,lamb,mu,alpha,A,X,T,A_path):
 
 
 
-def convergence_extension(beta,lamb,mu,alpha,X,T):
+def convergence_extension(par):
 
-    L_path = np.zeros(T)  # initialize a vector to store optimal L for each time period
+    L_path = np.zeros(par.T)  # initialize a vector to store optimal L for each time period
     L_path[0] = 0.1  # set the initial value of L in the vector
-    A_path = np.zeros(T)
-    A_path[0] = 1  # set the initial value of L in the vector
-    A_path = np.power(1.02, np.arange(T))  # set the initial value of L in the vector
+    A_path = np.zeros(par.T)
+    A_path[0] = 1  # set the initial value of A in the vector
+    A_path = np.power(1.02, np.arange(par.T))  # create growth in A
 
-    for i in range(1,T):
+    for i in range(1,par.T):
 
         # a. find next period L
-        L_next = ((1-beta)/lamb)*L_path[i-1]**(1-alpha)*(A_path[i]*X)**(alpha)+(1-mu)*L_path[i-1]
+        L_next = ((1-par.beta)/par.lamb)*L_path[i-1]**(1-par.alpha)*(A_path[i]*par.X)**(par.alpha)+(1-par.mu)*L_path[i-1]
 
         # b. store value
         L_path[i] = L_next
     
-    T_vec = np.linspace(0,T,T)
+    T_vec = np.linspace(0,par.T,par.T)
     fig = plt.figure()
 
 
