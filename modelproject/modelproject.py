@@ -55,7 +55,7 @@ def phase_diagram(par):
     ax.plot(L_vec,L2_vec)
     ax.plot(L_vec,L3_vec)
 
-    ax.set_title('Phase diagram for labor in the Malthus model')
+    ax.set_title('The phase diagram for labor in the Malthus model')
     ax.set_xlabel('$L_{t}$')
     ax.set_ylabel('$L_{t+1}$')
 
@@ -84,7 +84,7 @@ def convergence(beta,lamb,mu,alpha,A_val,X_val,T_val,interactive=False):
         ax = fig.add_subplot(1,1,1)
         ax.plot(T_vec,L_path)
         ax.axhline(solve(obj_lss,return_res=True),ls='--',color='black',label='analytical steady state')
-        ax.set_title('Convergence diagram for the Malthus model')
+        ax.set_title('The convergence diagram for the Malthus model')
         ax.set_xlabel('Time period')
         ax.set_ylabel('Labor force/population')
 
