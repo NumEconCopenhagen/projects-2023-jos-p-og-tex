@@ -327,7 +327,7 @@ class HouseholdSpecializationModelClass:
         disutility = par.nu*(TM**epsilon_/epsilon_+TF**epsilon_/epsilon_)
 
         # e. preferences for housework
-        pref_H_work = par.k*np.log(HF/HM - HM/HF)
+        pref_H_work = par.k*(HF/HM - HM/HF)
         
         return utility - disutility + pref_H_work
     
@@ -416,7 +416,7 @@ class HouseholdSpecializationModelClass:
             return val
 
         # Initial guess for k
-        initial_guess_k = 0.0005
+        initial_guess_k = -0.00002
 
         # Optimization
         result = optimize.minimize(objective_new, initial_guess_k, method='Nelder-Mead')
