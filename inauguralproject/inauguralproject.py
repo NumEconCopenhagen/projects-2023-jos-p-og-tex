@@ -230,7 +230,7 @@ class HouseholdSpecializationModelClass:
         print(f"Optimal sigma: {sol.optimal_sigma:.2f}")
 
 
-    #### QUESTION 5
+#### QUESTION 5
     # Defining a new utility function with preferences for who in the couple works at home
     def calc_utility5(self,LM,HM,LF,HF):
         """ calculate utility """
@@ -260,12 +260,12 @@ class HouseholdSpecializationModelClass:
         disutility = par.nu*(TM**epsilon_/epsilon_+TF**epsilon_/epsilon_)
 
         # e. preferences for housework
-        pref_H_work = par.k*(HF/HM - HM/HF)
+        pref_H_work = par.k*np.log(HF/HM - HM/HF)
         
         return utility - disutility + pref_H_work
     
     # Solving the model as before, but know using the extended version
-    def extension(self,alpha=None,sigma=None):
+    def solve_extension(self):
         """ solve model continously """
 
         par = self.par 
@@ -290,7 +290,6 @@ class HouseholdSpecializationModelClass:
         opt.HM = result.x[1]
         opt.LF = result.x[2]
         opt.HF = result.x[3]
-        #opt.u = self.calc_utility(opt.LM,opt.HM,opt.LF,opt.HF)
         
         return opt
 
@@ -305,38 +304,62 @@ class HouseholdSpecializationModelClass:
             par.wF = wF
             
             # Running the model and replacing the values in the vectors with the optimal values
-            opt = self.extension()
+            opt = self.solve_extension()
             sol.HF_vec[i]=opt.HF
             sol.HM_vec[i]=opt.HM
 
         return sol.HF_vec, sol.HM_vec
     
+
+    def run_regression5(self):
+        """ run regression """
+
+        par = self.par
+        sol = self.sol
+
+        self.solve_wF_vec5()
+
+        x = np.log(par.wF_vec)
+        y = np.log(sol.HF_vec/sol.HM_vec)
+        A = np.vstack([np.ones(x.size),x]).T
+        sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0] 
+
+        return sol.beta0,sol.beta1
+
+
     # Defining a method to find the optimal value of k to match the target values for beta0 and beta1
-    def optimalk(self,do_print=False):
-        """ solve model continously """
+    def optimal_k(self):
+        """ find alpha and sigma to match data """
 
         par = self.par 
         sol = self.sol
-        opt = SimpleNamespace()  
 
-        # a. objective function (to minimize)
-        def obj(k):
+        def objective_new(k):
+            par.k = k
+
+            # Assign the parameter values and define the target values for beta0 and beta1
             beta0 = 0.4
             beta1 = -0.1
-            self.solve_wF_vec5()
-            x = np.log(par.wF_vec)
-            y = np.log(sol.HF_vec/sol.HM_vec)
-            A = np.vstack([np.ones(x.size),x]).T
-            par.k = k
-            sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0] 
-            return (beta0-sol.beta0)**2+(beta1-sol.beta1)**2
-        
-        # c. call solve
-        k0=0.0 # initial guess
-        result = optimize.minimize(obj,k0,method='Nelder-Mead')
-        par.k = result.x[0]
 
-        if do_print:
-            print(f"k = {par.k:.4f}")
-        
-        return par.k,sol.beta0,sol.beta1
+            # Run the regression for the different vector of ratios between home production and wages when the parameters vary
+            sol.beta0,sol.beta1 = self.run_regression5()
+
+            # Compute the objective value
+            val = (beta0 - sol.beta0)**2 + (beta1 - sol.beta1)**2
+
+            return val
+
+        # Initial guess for k
+        initial_guess_k = 0.0005
+
+        # Optimization
+        result = optimize.minimize(objective_new, initial_guess_k, method='Nelder-Mead')
+
+        # Extract the optimized values
+        sol.optimal_k = result.x[0]
+
+        # Printing the results
+        print(f"Minimum value: {result.fun:.2f}")
+        print(f"Optimal k: {sol.optimal_k:.5f}")
+        print(f"Beta0: {sol.beta0:.2f}")
+        print(f"Beta1: {sol.beta1:.2f}")
