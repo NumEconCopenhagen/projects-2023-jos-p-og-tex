@@ -131,8 +131,6 @@ def explore_data(x_value,y_value,title,xlabel,ylabel,min_y):
 
     return ax
 
-
-
 def correlation(df):
 
     # extracting the columns to explore correlation for
@@ -145,4 +143,3 @@ def correlation(df):
     print(f"p-value: {p_value:.2f}")
 
     return None
-
