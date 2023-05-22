@@ -54,7 +54,6 @@ class HouseholdSpecializationModelClass:
         par.k = 0
 
 
-
 # Defining the utility function
     def calc_utility(self,LM,HM,LF,HF):
         """ calculate utility """
@@ -152,28 +151,96 @@ class HouseholdSpecializationModelClass:
         opt.HM = result.x[1]
         opt.LF = result.x[2]
         opt.HF = result.x[3]
-        #opt.u = self.calc_utility(opt.LM,opt.HM,opt.LF,opt.HF)
         
         return opt
 
 
-    def solve_wF_vec(self,discrete=False):
-        """ solve model for vector of female wages """
+# Defining a method to show how alpha and sigma change the ratio of hours worked at home
+    def set_alpha_sigma(self, alpha_list, sigma_list):
+        """ solve model for different values of alpha and sigma"""
 
+        par = self.par 
+        opt = SimpleNamespace()
+        resultsx = {}
+
+        # We solve the model using the defined lists of values for sigma and alpha
+        for alpha in alpha_list:    
+            for sigma in sigma_list:
+                
+                # Assigning values to alpha and sigma
+                par.alpha = alpha
+                par.sigma = sigma
+
+                # Solving the model
+                opt = self.solve_discrete()
+                resultsx[(alpha, sigma)] = opt.HF / opt.HM
+
+                # Print results
+                if opt.HM != 0:
+                    print(f"alpha = {alpha:.2f}, sigma = {sigma:.2f} -> HF/HM = {opt.HF:.2f}/{opt.HM:.2f} = {opt.HF/opt.HM:.2f}")
+                else:
+                    print(f"alpha = {alpha:.2f}, sigma = {sigma:.2f} -> HF/HM = {opt.HF:.2f}/{opt.HM:.2f} (division by zero)")
+
+        # Plotting optimal HF/HM against alpha for each sigma using a loop
+        fig = plt.figure(figsize = (6,4))
+        ax = fig.add_subplot(1,1,1)
+
+        # Loop over sigma-values
+        for sigma in sigma_list:
+            y = [resultsx[(alpha, sigma)] for alpha in alpha_list]
+            ax.plot(alpha_list, y, label=f'$\sigma$={sigma}')
+
+        ax.set_xlabel('$\\alpha$')
+        ax.set_ylabel('$H_F/H_M$')
+        ax.set_title('$H_F/H_M$ as function of $\\alpha$ and $\sigma$')
+        ax.legend(prop={'size': 10})
+        plt.show()
+
+
+# Defining a method to solve the model for a vector of wages
+    def solve_wF_vec(self, discrete=False, do_print=False):
+        """ solve model for vector of female wages """
+    
         par = self.par
         sol = self.sol
-
-        for i,wF in enumerate(par.wF_vec):    
+        
+        # We create empty lists to store values of the logaritmic relationships for wage and home production.
+        w_log = []
+        H_log = []
+        
+        for i, wF in enumerate(par.wF_vec):
             par.wF = wF
             
             # Running the model and replacing the values in the vectors with the optimal values
-            opt = self.solve()
-            sol.HF_vec[i]=opt.HF
-            sol.HM_vec[i]=opt.HM
+            if discrete == False:
+                opt = self.solve()
+            else:
+                opt = self.solve_discrete()
+            
+            sol.HF_vec[i] = opt.HF
+            sol.HM_vec[i] = opt.HM
+            w_log.append(np.log(wF / par.wM))
+            H_log.append(np.log(opt.HF / opt.HM))
+            
+            if do_print:
+                print(f"wF = {wF:.2f} -> HF/HM = {opt.HF:.2f}/{opt.HM:.2f} = {opt.HF / opt.HM:.3f}")
+        
+        if do_print:
+            # Plot the results
+            fig1 = plt.figure(figsize=(6, 4))
+            ax = fig1.add_subplot(1, 1, 1)
+            
+            ax.plot(w_log, H_log, ls='-', lw=2, color='blue')
+            
+            ax.set_xlabel('$ log(w_F/w_M) $')
+            ax.set_ylabel('$ log(H_F/H_M) $')
+            ax.set_title('Relationship between home production and wages \n')
+            
+        if not do_print:
+            return sol.HF_vec, sol.HM_vec
+        
 
-        return sol.HF_vec, sol.HM_vec
-
-
+# Defining a method to run the regression
     def run_regression(self):
         """ run regression """
 
@@ -190,7 +257,7 @@ class HouseholdSpecializationModelClass:
         return sol.beta0,sol.beta1
 
     
-    #### QUESTION 4
+# defining a method to set alpha and sigma to fit the model to data
     def fit_data(self):
         """ find alpha and sigma to match data """
 
@@ -310,7 +377,7 @@ class HouseholdSpecializationModelClass:
 
         return sol.HF_vec, sol.HM_vec
     
-
+    # Defining a method to run the regression
     def run_regression5(self):
         """ run regression """
 
@@ -325,7 +392,6 @@ class HouseholdSpecializationModelClass:
         sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0] 
 
         return sol.beta0,sol.beta1
-
 
     # Defining a method to find the optimal value of k to match the target values for beta0 and beta1
     def optimal_k(self):
