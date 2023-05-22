@@ -11,12 +11,10 @@ import matplotlib.pyplot as plt
 
 
 # Modelspecification and class set-up e.g. HouseholdSpecializationModel.py
-
 class HouseholdSpecializationModelClass:
 
 
 # Definition of parameters
-
     def __init__(self):
         """ setup model """
 
@@ -57,9 +55,7 @@ class HouseholdSpecializationModelClass:
 
 
 
-
 # Defining the utility function
-
     def calc_utility(self,LM,HM,LF,HF):
         """ calculate utility """
 
@@ -91,7 +87,6 @@ class HouseholdSpecializationModelClass:
 
 
 # Defining the solution for discrete time
-
     def solve_discrete(self,do_print=False):
         """ solve model discretely """
         
@@ -132,7 +127,6 @@ class HouseholdSpecializationModelClass:
 
 
 # Defining the solution for continous time
-
     def solve(self,do_print=False):
         """ solve model continously """
 
@@ -196,11 +190,48 @@ class HouseholdSpecializationModelClass:
         return sol.beta0,sol.beta1
 
     
+    #### QUESTION 4
+    def fit_data(self):
+        """ find alpha and sigma to match data """
+
+        par = self.par 
+        sol = self.sol
+
+        def objective(params):
+            alpha, sigma = params
+            par.alpha = alpha
+            par.sigma = sigma
+
+            # Assign the parameter values and define the target values for beta0 and beta1
+            beta0 = 0.4
+            beta1 = -0.1
+
+            # Run the regression for the different vector of ratios between home production and wages when the parameters vary
+            sol.beta0,sol.beta1 = self.run_regression()
+
+            # Compute the objective value
+            val = (beta0 - sol.beta0)**2 + (beta1 - sol.beta1)**2
+
+            return val
+
+        # Initial guess for alpha and sigma
+        initial_guess = [0.5, 0.5]
+
+        # Optimization
+        result = optimize.minimize(objective, initial_guess, method='Nelder-Mead')
+
+        # Extract the optimized values
+        sol.optimal_alpha = result.x[0]
+        sol.optimal_sigma = result.x[1]
+
+        # Printing the results
+        print(f"Minimum value: {result.fun:.2f}")
+        print(f"Optimal alpha: {sol.optimal_alpha:.2f}")
+        print(f"Optimal sigma: {sol.optimal_sigma:.2f}")
+
 
     #### QUESTION 5
-
     # Defining a new utility function with preferences for who in the couple works at home
-
     def calc_utility5(self,LM,HM,LF,HF):
         """ calculate utility """
 
@@ -233,7 +264,6 @@ class HouseholdSpecializationModelClass:
         
         return utility - disutility + pref_H_work
     
-
     # Solving the model as before, but know using the extended version
     def extension(self,alpha=None,sigma=None):
         """ solve model continously """
