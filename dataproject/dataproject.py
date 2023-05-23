@@ -131,11 +131,11 @@ def explore_data(x_value,y_value,title,xlabel,ylabel,min_y):
 def correlation(df):
     """ Calculate correlation between variables """
 
-    # extracting the columns to explore correlation for
+    # Extracting the columns to explore correlation for
     precip = df['Precip']
     change_in_stock = df['Change_in_stock']
 
-    #calculation of correlation coefficient and p-value between precipitation and the change in OMXC25
+    # Calculation of correlation coefficient and p-value between precipitation and the change in OMXC25
     correlation_coefficient, p_value = pearsonr(precip, change_in_stock)
     print(f"Correlation coefficient: {correlation_coefficient:.2f}")
     print(f"p-value: {p_value:.2f}")
