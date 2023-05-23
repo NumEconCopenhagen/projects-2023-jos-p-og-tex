@@ -1,11 +1,7 @@
-
 # Import of packages 
-
 from types import SimpleNamespace
-
 import numpy as np
 from scipy import optimize
-
 import pandas as pd 
 import matplotlib.pyplot as plt
 
@@ -146,7 +142,7 @@ class HouseholdSpecializationModelClass:
         x0=[2,2,2,2] # initial guess
         result = optimize.minimize(obj,x0,method='Nelder-Mead')
         
-        # d. save results
+        # c. save results
         opt.LM = result.x[0]
         opt.HM = result.x[1]
         opt.LF = result.x[2]
@@ -163,7 +159,7 @@ class HouseholdSpecializationModelClass:
         opt = SimpleNamespace()
         resultsx = {}
 
-        # We solve the model using the defined lists of values for sigma and alpha
+        # Solve the model using the defined lists of values for sigma and alpha
         for alpha in alpha_list:    
             for sigma in sigma_list:
                 
@@ -204,7 +200,7 @@ class HouseholdSpecializationModelClass:
         par = self.par
         sol = self.sol
         
-        # We create empty lists to store values of the logaritmic relationships for wage and home production.
+        # Create empty lists to store values of the logaritmic relationships for wage and home production.
         w_log = []
         H_log = []
         
@@ -257,7 +253,7 @@ class HouseholdSpecializationModelClass:
         return sol.beta0,sol.beta1
 
     
-# defining a method to set alpha and sigma to fit the model to data
+# Defining a method to set alpha and sigma to fit the model to data
     def fit_data(self):
         """ find alpha and sigma to match data """
 
@@ -352,7 +348,7 @@ class HouseholdSpecializationModelClass:
         x0=[2,2,2,2] # initial guess
         result = optimize.minimize(obj,x0,method='Nelder-Mead')
         
-        # d. save results
+        # c. save results
         opt.LM = result.x[0]
         opt.HM = result.x[1]
         opt.LF = result.x[2]
@@ -395,7 +391,7 @@ class HouseholdSpecializationModelClass:
 
     # Defining a method to find the optimal value of k to match the target values for beta0 and beta1
     def optimal_k(self):
-        """ find alpha and sigma to match data """
+        """ find k to match data """
 
         par = self.par 
         sol = self.sol
@@ -407,7 +403,7 @@ class HouseholdSpecializationModelClass:
             beta0 = 0.4
             beta1 = -0.1
 
-            # Run the regression for the different vector of ratios between home production and wages when the parameters vary
+            # Run the regression for the different vector of ratios between home production and wages when the parameter varies
             sol.beta0,sol.beta1 = self.run_regression5()
 
             # Compute the objective value
