@@ -12,7 +12,7 @@ from yahoofinancials import YahooFinancials
 
 
 def import_data_dmi(api_key, DMI_URL):
-    """Requesting and importing data from DMI""" 
+    """ Requesting and importing data from DMI """ 
     
     # Issues a HTTP GET request
     r = requests.get(DMI_URL, params={'api-key': api_key})
@@ -32,7 +32,7 @@ def import_data_dmi(api_key, DMI_URL):
 
 
 def selecting_data_dmi(parameterId):
-    """Selecting relevant data from DMI""" 
+    """ Selecting relevant data from DMI """ 
 
     # We use an API-key given to us from DMI's database to retrieve data
     api_key = 'bd463c7d-f6f8-431d-a5a7-c466766a8363'
@@ -55,9 +55,6 @@ def selecting_data_dmi(parameterId):
         '05529', '05537', '05545', '05575', '05735', '05880', '05889', 
         '05935', '05945', '05970', '05986', '05994'
     ]
-
-    # Specify one or more parameter IDs or all_parameters
-    #parameterId = ['precip_past1h']
 
     # Derive datetime specifier string
     datetime_str = start_time.tz_localize('UTC').isoformat() + '/' + end_time.tz_localize('UTC').isoformat()
@@ -101,7 +98,7 @@ def selecting_data_dmi(parameterId):
 
 
 def import_data_yahoo(from_time, to_time):
-    """Requesting and importing data from Yahoo Finance""" 
+    """ Requesting and importing data from Yahoo Finance """ 
 
     OMXC25 = yf.download('^OMXC25', start=from_time, end=to_time, progress=False)
     OMXC25.reset_index(inplace=True) 
@@ -114,7 +111,7 @@ def import_data_yahoo(from_time, to_time):
 
 
 def explore_data(x_value,y_value,title,xlabel,ylabel,min_y):
-    """Creating figures to explore the data""" 
+    """ Creating figures to explore the data """ 
 
     # a. create the figure
     fig = plt.figure()
@@ -131,18 +128,16 @@ def explore_data(x_value,y_value,title,xlabel,ylabel,min_y):
 
     return ax
 
-
-
 def correlation(df):
+    """ Calculate correlation between variables """
 
-    # extracting the columns to explore correlation for
+    # Extracting the columns to explore correlation for
     precip = df['Precip']
     change_in_stock = df['Change_in_stock']
 
-    #calculation of correlation coefficient and p-value between precipitation and the change in OMXC25
+    # Calculation of correlation coefficient and p-value between precipitation and the change in OMXC25
     correlation_coefficient, p_value = pearsonr(precip, change_in_stock)
     print(f"Correlation coefficient: {correlation_coefficient:.2f}")
     print(f"p-value: {p_value:.2f}")
 
     return None
-
