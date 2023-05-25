@@ -14,20 +14,20 @@ class question2:
     def __init__(self):
         """ setup model """
 
-        # create namespaces
+        # Create namespaces
         par2 = self.par2 = SimpleNamespace()
 
-        # parameters for static model
+        # Parameters for static model
         par2.eta = 0.5
         par2.w = 1
 
-        # parameters for the dynamic model
+        # Parameters for the dynamic model
         par2.rho = 0.90
         par2.iota = 0.01
         par2.sigma = 0.1
         par2.R = (1+0.01)**(1/12)
 
-        # time periods
+        # Time periods
         par2.n = 120
 
  
@@ -38,12 +38,12 @@ class question2:
 
         par2 = self.par2
 
-        # a. solve
+        # Optimize
         obj = lambda l: -(kappa*l**(1-par2.eta)-par2.w*l)
         x0 = [0.0]
         res = optimize.minimize(obj,x0,method='L-BFGS-B')
             
-        # b. save
+        # Store results
         l_star = res.x[0]
 
         return l_star
@@ -55,6 +55,7 @@ class question2:
         
         par2 = self.par2
 
+        # Calculate profit for different values of kappa
         for kappa in kappa_vec:
             l_optimal = self.profit(kappa)
             l_given = ((1-par2.eta)*kappa/par2.w)**(1/par2.eta)
@@ -67,7 +68,7 @@ class question2:
         
         par2 = self.par2
 
-        # Define the error term
+        ### Define the error term
 
         # Mean and standard deviation of the distribution
         par2.mu = -0.5*par2.sigma**2 
@@ -76,13 +77,15 @@ class question2:
         # Set a random seed for reproducibility
         np.random.seed(2805)
 
-        # Generate the random shocks
+        # Generate the random error terms
         epsilon = np.random.normal(par2.mu, par2.sigma, par2.n)
+
+        ### Create path for demand shock
 
         # Create an empty vector to store values of the demand shock
         log_kappa = []
 
-        # Fill out out the vector given the shock path
+        # Fill out out the vector given the error term path
         for i,eps in enumerate(epsilon):
             if i == 0:
                 log_kappa.append(np.log(1))
@@ -99,10 +102,13 @@ class question2:
 
         par2 = self.par2
 
-        # time vector
+        # Set up time vector
         t = np.linspace(0, par2.n, par2.n)
 
+        # Initialize result
         result = 0
+
+        # Calulate ex post value for given shock path
         for i in range(len(l_path)):
             if i > 0 and l_path[i] != l_path[i-1]:
                 result += (par2.R**(-t[i])*(np.exp(log_kappa[i])*l_path[i]**(1-par2.eta)-par2.w*l_path[i]-par2.iota))
@@ -118,12 +124,13 @@ class question2:
 
         par2 = self.par2
 
-        # create empty list to store values of the ex ante value
+        # Create empty list to store values of the ex ante value
         H_sum = []
 
-        # demand shock vector
+        # Demand shock vector
         log_kappa = self.demand_shock()
         
+        # Calculate values for each time period
         for k in range(0,K-1):
             np.random.seed(k)
             epsilon = np.random.normal(par2.mu, par2.sigma, par2.n)
@@ -136,8 +143,10 @@ class question2:
             h_k = self.ex_post_value(log_kappa_k,l_path)
             H_sum.append(h_k)
 
+        # Sum to ex ante value
         H = 1/K*np.sum(H_sum)
         
+        # Print results
         if do_print == True:
             print(f'The ex ante value of the hair salon is {H:.2f}')
         else:
@@ -150,14 +159,19 @@ class question2:
 
         par2 = self.par2
 
-        # demand shock vector
+        # Demand shock vector
         log_kappa = self.demand_shock()
 
         # Calculate optimal labor supply
         l_star = (((1-par2.eta)*np.exp(log_kappa))/par2.w)**(1/par2.eta)
 
+        # Setup vector for new policy
         l_vec2 = np.zeros_like(l_star)
+        
+        # Set labor to 0 in initial period
         l_vec2[0] = 0
+
+        # Update labor with new policy
         for i in range(1, len(l_vec2)):
             if np.abs(l_vec2[i-1]-l_star[i]) > delta:
                 l_vec2[i] = l_star[i]
@@ -166,7 +180,7 @@ class question2:
         return l_vec2
 
 
-    # Define function
+    # Define function to find delta that maximize value
     def value_opt(self,do_print=False):
         """ Find optimal delta to maximize value function"""
 
@@ -193,6 +207,7 @@ class question2:
         
     # Create plot for ex ante value given delta
     def delta_plot(self):
+        """ Create plot for value given delta"""
         
         # Generate delta values
         delta_values = np.linspace(0.001, 0.999, 100)
@@ -228,8 +243,10 @@ class question2:
         # Show the plot
         plt.show();
 
+
     # Suggest alternative policy
     def l_vec3(self,factor):
+        """ Define new policy vector """
 
         par2 = self.par2
 
@@ -258,10 +275,10 @@ class question3:
     def __init__(self):
         """ setup model """
 
-        # create namespaces
+        # Create namespaces
         sett = self.sett = SimpleNamespace()
 
-        # settings
+        # Settings
         sett.bounds = [-600, 600]
         sett.tolerance = 1e-8
         sett.warmup_iters = 10
@@ -278,8 +295,10 @@ class question3:
         return self.griewank_(x[0],x[1])
     
 
+    # Define efined global optimizer with multi-start
     def refined_global_optimizer(self,bounds, tolerance, warmup_iters, max_iters):
-                
+        """ Global optimizer with multi-start for griewank function"""   
+
         # Step 1: Choose bounds for x and tolerance
         x_bounds = bounds
         tau = tolerance
@@ -297,21 +316,22 @@ class question3:
         x_k0_vec = []
 
         for k in range(K_max):
+
             # Step 3A: Draw random x^k uniformly within chosen bounds
             x_k = np.random.uniform(x_bounds[0], x_bounds[1], size=2)
             
             if k < K_warmup:
-                # Step 3E: Run optimizer with x^k as initial guess
+                # Step 3E: Run optimizer with x_k as initial guess
                 res = optimize.minimize(self.griewank, x_k, method='BFGS', tol=tau)
                 x_k_star = res.x
                 x_k0_vec.append(x_k_star)
 
             else:
-                # Step 3C: Calculate chi^k
-                chi_k = 0.5 * (2 / (1 + np.exp((k - K_warmup) / 100)))
+                # Step 3C: Calculate chi_k
+                chi_k = 0.5*(2/(1+np.exp((k-K_warmup)/100)))
                 
                 # Step 3D: Calculate x_k0
-                x_k0 = chi_k * x_k + (1 - chi_k) * x_star
+                x_k0 = chi_k*x_k+(1-chi_k)*x_star
                 x_k0_vec.append(x_k0)
                 
                 # Step 3E: Run optimizer with x_k0 as initial guess
@@ -327,11 +347,13 @@ class question3:
                 nit = k
                 break
         
-        # Step 4: Return the result x_star
+        # Step 4: Return the result x_star, the vector for initial guesses and number of iterations
         return x_star, x_k0_vec, nit
         
 
+    # Define method to plot initial guess given iteration
     def plot_starting_guess(self):
+        """ Plot initial guess for each iteration"""
 
         # Define bounds, tolerance, warmup and max iterations
         bounds = [-600, 600]
