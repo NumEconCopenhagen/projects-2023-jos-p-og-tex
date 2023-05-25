@@ -293,6 +293,24 @@ class HouseholdSpecializationModelClass:
         print(f"Optimal sigma: {sol.optimal_sigma:.2f}")
 
 
+# Defining a method to plot the comparison of models with different parameter values
+    def compare_model(self,H_model2,H_model4,w_log):
+        """ Compare the model for different alpha and sigma values"""
+
+        # Plotting the two regressions and adding label and legend
+        fig = plt.figure(figsize=(8, 5))
+        ax = fig.add_subplot(1, 1, 1)
+
+        ax.plot(w_log, H_model2, label='Original alpha and sigma')
+        ax.plot(w_log, H_model4, label='New alpha and sigma')
+
+        ax.set_xlabel('$ log(w_F/w_M) $')
+        ax.set_ylabel('$ log(H_F/H_M) $')
+        ax.set_title('Comparison')
+        ax.legend()
+        plt.show()
+
+
 #### QUESTION 5
     # Defining a new utility function with preferences for who in the couple works at home
     def calc_utility5(self,LM,HM,LF,HF):
