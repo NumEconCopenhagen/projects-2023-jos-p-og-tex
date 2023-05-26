@@ -538,7 +538,7 @@ class question2:
         """ Create plot for value given delta """
         
         # Generate delta values
-        delta_values = np.linspace(0.001, 0.999, 100)
+        delta_values = np.linspace(0.001, 1, 100)
 
         # Create empty list to store the ex ante value
         value_vec = []
