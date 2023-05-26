@@ -1,8 +1,8 @@
 # \[Jos, P og Tex\]
 
 **Group members:**
-- Josefine Trangeled Pedersen
-- Pernille Nygaard Svendsen
+- Josefine Trangeled Pedersen (lnr169)
+- Pernille Nygaard Svendsen (pld747)
 - Viktor Texel (vjq830)
 
 *Group name on digital exam: Fri-953598-34*

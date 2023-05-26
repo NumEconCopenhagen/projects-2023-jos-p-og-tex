@@ -51,7 +51,7 @@ class question1:
             L_vec.append(L_val)
 
         # Plot the figure
-        fig1 = plt.figure(figsize=(9, 4))
+        fig1 = plt.figure(figsize=(6, 4))
         ax = fig1.add_subplot(1, 1, 1)
 
         ax.plot(w_values, L_vec, ls='-', lw=2, color='blue')
