@@ -243,6 +243,44 @@ class question1:
             print(f'Optimal G: {G_star:.2f}')
         else: 
             return G_star
+        
+    def optimal_tax(self,L_star_func,case=1):
+        """ Find optimal tax rate to maximize utility function"""
+
+        # Utility function for the worker
+        if case == 1:
+            def obj(tau):
+                G = tau*self.par.w*obj(tau)
+                return self.max_general_utility(L_star_func,G,case=1)
+        else:
+            def obj(tau):
+                G = tau*self.par.w*obj(tau)
+                return self.max_general_utility(L_star_func,G,case=2)
+
+
+        # Equality constraint function
+        def constraint(tau, G):
+            return G - tau*self.par.w*obj(tau, G)
+
+        # Initial guess for the tax rate
+        tau0 = 0.5
+
+        # Define the optimization problem
+        problem = {'type': 'eq','fun': constraint}
+
+        # Perform the optimization
+        result = optimize.minimize(obj,tau0,method='SLSQP')
+
+        # Retrieve the optimal tax rate
+        optimal_tax_rate = result.x[0]
+
+        # Evaluate the worker's utility at the optimal tax rate
+        optimal_utility = obj(optimal_tax_rate)
+
+        # Print the results
+        print("Optimal Tax Rate:", optimal_tax_rate)
+        print("Optimal Utility:", optimal_utility)
+
     
 
 ######## Question 2 ########
