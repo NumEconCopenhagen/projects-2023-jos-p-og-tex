@@ -186,7 +186,7 @@ class question1:
             return (((par.alpha*C**((sigma-1)/sigma)+(1-par.alpha)*G**((sigma-1)/sigma))**(sigma/(sigma-1)))**(1-rho)-1)/(1-rho) - par.v*(L**(1+epsilon)/(1+epsilon))
 
 
-    def max_general_utility(self,L_star_func,case=1,do_print=False):
+    def max_general_utility(self,L_star_func,G,case=1,do_print=False):
         """ Find optimal tax rate to maximize utility function"""
 
         par = self.par
@@ -195,20 +195,18 @@ class question1:
         if case == 1:
             def obj(L):
                 tau_star = self.max_utility(L_star_func)
-                G = tau_star*par.w*L*(1-tau_star)*par.w
                 util = self.general_utility(G,L,tau=tau_star)
                 return -util
         else:
             def obj(L):
                 tau_star = self.max_utility(L_star_func)
-                G = tau_star*par.w*L*(1-tau_star)*par.w
                 util = self.general_utility(G,L,tau=tau_star,case=2)
                 return -util
 
-        # Make initial guess for delta
+        # Make initial guess for labour
         L0 = 0.2
 
-        # Solve for optimal delta
+        # Solve for optimal labour
         res = optimize.minimize(obj,L0,method='Nelder-Mead',tol=1e-8)
             
         # Save result
@@ -218,35 +216,33 @@ class question1:
     
 
 ##### CHANGE #####
-    def xxx(self,L_star_func,case=1,do_print=False):
+    def optimal_G(self,L_star_func,case=1,do_print=True):
         """ Find optimal tax rate to maximize utility function"""
 
         par = self.par
 
         # Define objective function
         if case == 1:
-            def obj(L):
+            def obj(G):
+                L_star1 = self.max_general_utility(L_star_func,G,case=1)
                 tau_star = self.max_utility(L_star_func)
-                G = tau_star*par.w*L*(1-tau_star)*par.w
-                util = self.general_utility(G,L,tau=tau_star)
-                return -util
+                return G-tau_star*par.w*L_star1
         else:
-            def obj(L):
+            def obj(G):
+                L_star2 = self.max_general_utility(L_star_func,G,case=2)
                 tau_star = self.max_utility(L_star_func)
-                G = tau_star*par.w*L*(1-tau_star)*par.w
-                util = self.general_utility(G,L,tau=tau_star,case=2)
-                return -util
-
-        # Make initial guess for delta
-        L0 = 0.2
+                return G-tau_star*par.w*L_star2
 
         # Solve for optimal delta
-        res = optimize.minimize(obj,L0,method='Nelder-Mead',tol=1e-8)
+        result = optimize.root_scalar(obj,bracket=[0.01, 7],method='brentq')
             
         # Save result
-        L_star = res.x[0]
+        G_star = result.root
 
-        return L_star
+        if do_print:
+            print(f'Optimal G: {G_star:.2f}')
+        else: 
+            return G_star
     
 
 ######## Question 2 ########
