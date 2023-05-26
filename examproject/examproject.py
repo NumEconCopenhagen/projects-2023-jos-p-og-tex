@@ -6,11 +6,222 @@ from scipy import optimize
 
 
 
+######## Question 1 ########
+
+class question1:
+    
+    # Definition of parameters
+    def __init__(self):
+        """ setup model """
+
+        # Create namespaces
+        par = self.par = SimpleNamespace()
+
+        # Parameters 
+        par.kappa = 1.0
+        par.alpha = 0.5
+        par.v = 1/(2*16**2)
+        par.w = 1.0
+        par.tau = 0.3
+
+        # Parameters for general model
+        par.sigma1 = 1.001
+        par.rho1 = 1.001
+        par.epsilon1 = 1.0
+
+        par.sigma2 = 1.5
+        par.rho2 = 1.5
+        par.epsilon2 = 1.0
+
+    
+    # Define method to plot implied L, G and worker utility for different tau values
+    def plot_functions(self,L_star_func):
+
+        par = self.par
+
+        # Generate data for the plot
+        tau_values = np.linspace(0.001, 0.999, 100)
+
+        # Create empty lists to store the data
+        L_vec = []
+        G_vec = []
+        tau_vec = []
+        utility_vec = []
+
+        for tau_val in tau_values:
+            # Create vector of tau values
+            tau_vec.append(tau_val)
+
+            # Calculate w_tilde
+            w_tilde_val = (1-tau_val)*par.w
+
+            # Calculate optimal labor and store
+            L_val = L_star_func(par.kappa, par.alpha, par.v, w_tilde_val)
+            L_vec.append(L_val)
+
+            # Calculate optimal government consumption and store
+            G_val = tau_val*par.w*L_val*((1-tau_val)*par.w)
+            G_vec.append(G_val)
+
+            # Calculate worker utility and store
+            u_val = np.log(G_val**(1-par.alpha)*(par.kappa+(1-tau_val)*par.w*L_val)) - par.v*(L_val**2/2)
+            utility_vec.append(u_val)
+
+
+        # Create plot
+        fig = plt.figure(figsize=(10,8))
+        ax = fig.add_subplot(1,1,1)
+        ax.plot(tau_vec, L_vec, label='Labor Supply')
+        ax.plot(tau_vec, G_vec, label='Government Consumption')
+        ax.plot(tau_vec, utility_vec, label='Utility')
+
+
+        # Set labels and title
+        ax.set_xlabel('Tax Rate (tau)')
+        ax.set_ylabel('Government Consumption, Labor Supply, and Worker Utility')
+        ax.set_title('Relationship between Tax Rate, Government Consumption, Labor Supply, and Worker Utility')
+
+        # Add a legend
+        ax.legend()
+
+        # Show the plot
+        plt.show();
+
+
+    def utility(self,L_star_func,tau):
+        """ Calculate utility"""
+
+        par = self.par
+        par.tau = tau
+
+        # Calculate optimal labor 
+        L_val = L_star_func(par.kappa, par.alpha, par.v, par.w)
+
+        # Calculate optimal government consumption 
+        G_val = par.tau*par.w*L_val*((1-par.tau)*par.w)
+
+        # Calculate worker utility and store
+        u_val = np.log(G_val**(1-par.alpha)*(par.kappa+(1-par.tau)*par.w*L_val)) - par.v*(L_val**2/2)
+
+        return u_val
+
+
+    def max_utility(self,L_star_func,do_print=False):
+        """ Find optimal tax rate to maximize utility function"""
+
+        par = self.par
+
+        # Define objective function
+        def obj(tau):
+            par.tau = tau
+            util = self.utility(L_star_func,tau)
+            return -util
+
+        # Make initial guess for delta
+        tau0 = 0.2
+
+        # Solve for optimal delta
+        res = optimize.minimize(obj,tau0,method='Nelder-Mead',tol=1e-8)
+            
+        # Save result
+        tau_star = res.x[0]
+
+        # Print result
+        if do_print:
+            print(f'optimal tax rate: {tau_star:.3f}')
+            
+            # Create plot
+            tau_values = np.linspace(0.001, 0.999, 100)
+            tau_vec = []
+            utility_vec = []
+
+            for tau_val in tau_values:
+                # Create vector of tau values
+                tau_vec.append(tau_val)
+
+                # Calculate worker utility and store
+                u_val = self.utility(L_star_func,tau_val)
+                utility_vec.append(u_val)
+
+
+            fig = plt.figure(figsize=(10,8))
+            ax = fig.add_subplot(1,1,1)
+            ax.plot(tau_vec, utility_vec, label='Utility')
+            ax.scatter(tau_star,self.utility(L_star_func,tau_star), label='Optimal tax rate', s=100) 
+
+
+            # Set labels and title
+            ax.set_xlabel('Tax Rate (tau)')
+            ax.set_ylabel('Government Consumption, Labor Supply, and Worker Utility')
+            ax.set_title('Relationship between Tax Rate and Worker Utility')
+
+            # Add a legend
+            ax.legend()
+
+            # Show the plot
+            plt.show();
+
+        else:
+            return tau_star
+        
+
+    def general_utility(self,G,L,tau,case=1):
+        """ General utility function"""
+
+        par = self.par
+
+        par.tau = tau
+
+        C = par.kappa+(1-par.tau)*par.w*L
+
+        if case == 1:
+            sigma = par.sigma1 
+            rho = par.rho1
+            epsilon = par.epsilon1
+            return (((par.alpha*C**((sigma-1)/sigma)+(1-par.alpha)*G**((sigma-1)/sigma))**(sigma/(sigma-1)))**(1-rho)-1)/(1-rho) - par.v*(L**(1+epsilon)/(1+epsilon))
+        else:
+            sigma = par.sigma2
+            rho = par.rho2
+            epsilon = par.epsilon2
+            return (((par.alpha*C**((sigma-1)/sigma)+(1-par.alpha)*G**((sigma-1)/sigma))**(sigma/(sigma-1)))**(1-rho)-1)/(1-rho) - par.v*(L**(1+epsilon)/(1+epsilon))
+
+
+    def max_general_utility(self,L_star_func,case=1,do_print=False):
+        """ Find optimal tax rate to maximize utility function"""
+
+        par = self.par
+
+        # Define objective function
+        if case == 1:
+            def obj(L):
+                tau_star = self.max_utility(L_star_func)
+                G = tau_star*par.w*L*(1-tau_star)*par.w
+                util = self.general_utility(G,L,tau=tau_star)
+                return -util
+        else:
+            def obj(L):
+                tau_star = self.max_utility(L_star_func)
+                G = tau_star*par.w*L*(1-tau_star)*par.w
+                util = self.general_utility(G,L,tau=tau_star,case=2)
+                return -util
+
+        # Make initial guess for delta
+        L0 = 0.2
+
+        # Solve for optimal delta
+        res = optimize.minimize(obj,L0,method='Nelder-Mead',tol=1e-8)
+            
+        # Save result
+        L_star = res.x[0]
+ 
+        return L_star
+    
+
 ######## Question 2 ########
 
 class question2:
 
-# Definition of parameters
+    # Definition of parameters
     def __init__(self):
         """ setup model """
 
