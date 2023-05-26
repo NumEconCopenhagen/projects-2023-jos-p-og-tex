@@ -416,7 +416,7 @@ class question2:
         # Fill out out the vector given the error term path
         for i,eps in enumerate(epsilon):
             if i == 0:
-                log_kappa.append(np.log(1))
+                log_kappa.append(par2.rho*np.log(1)+eps)
             else:
                 log_kappa.append(par2.rho*log_kappa[i-1]+eps)
 
@@ -454,20 +454,17 @@ class question2:
 
         # Create empty list to store values of the ex ante value
         H_sum = []
-
-        # Demand shock vector
-        log_kappa = self.demand_shock()
         
         # Calculate values for each time period
-        for k in range(0,K-1):
+        for k in range(K):
             np.random.seed(k)
             epsilon = np.random.normal(par2.mu, par2.sigma, par2.n)
             log_kappa_k = []
             for i,eps in enumerate(epsilon):
                 if i == 0:
-                    log_kappa_k.append(np.log(1))
+                    log_kappa_k.append(par2.rho*np.log(1)+eps)
                 else:
-                    log_kappa_k.append(par2.rho*log_kappa[i-1]+eps)
+                    log_kappa_k.append(par2.rho*log_kappa_k[i-1]+eps)
             h_k = self.ex_post_value(log_kappa_k,l_path)
             H_sum.append(h_k)
 
@@ -517,7 +514,7 @@ class question2:
             return -self.ex_ante_value(10,self.l_vec2(delta))
 
         # Make initial guess for delta
-        delta0 = 0.11
+        delta0 = 0.21
 
         # Solve for optimal delta
         res = optimize.minimize(obj,delta0,method='Nelder-Mead',tol=1e-8)
