@@ -32,6 +32,35 @@ class question1:
         par.epsilon2 = 1.0
 
     
+    # Define method to plot how L depends on wage
+    def plot_L_wage(self,L_star_func):
+        
+        par = self.par
+        
+        # Define a vector for values of real wage
+        w_values = np.linspace(1, 20, 100)
+
+        # Define a vector to store optimal labor
+        L_vec = []
+
+        # Calculate optimal labor for different values of the real wage
+        for ws in w_values:
+            tau = 0.3
+            w_tilde_val = (1-tau)*ws
+            L_val = L_star_func(par.kappa, par.alpha, par.v, w_tilde_val)
+            L_vec.append(L_val)
+
+        # Plot the figure
+        fig1 = plt.figure(figsize=(9, 4))
+        ax = fig1.add_subplot(1, 1, 1)
+
+        ax.plot(w_values, L_vec, ls='-', lw=2, color='blue')
+
+        ax.set_xlabel('wage (w)')
+        ax.set_ylabel('Optimal labor supply ($L^*$)')
+        ax.set_title('Relationship between labour supply and real wage \n');
+
+
     # Define method to plot implied L, G and worker utility for different tau values
     def plot_functions(self,L_star_func):
 
