@@ -195,7 +195,7 @@ class question1:
         if case == 1:
             def obj(L):
                 tau_star = self.max_utility(L_star_func)
-                util = self.general_utility(G,L,tau=tau_star)
+                util = self.general_utility(G,L,tau_star)
                 return -util
         else:
             def obj(L):
@@ -215,7 +215,7 @@ class question1:
         return L_star
     
 
-##### CHANGE #####
+    # Define method to find optimal G given the tax rate
     def optimal_G(self,L_star_func,case=1,do_print=True):
         """ Find optimal tax rate to maximize utility function"""
 
@@ -224,13 +224,13 @@ class question1:
         # Define objective function
         if case == 1:
             def obj(G):
-                L_star1 = self.max_general_utility(L_star_func,G,case=1)
                 tau_star = self.max_utility(L_star_func)
+                L_star1 = self.max_general_utility(L_star_func,G,tau_star,case=1)
                 return G-tau_star*par.w*L_star1
         else:
             def obj(G):
-                L_star2 = self.max_general_utility(L_star_func,G,case=2)
                 tau_star = self.max_utility(L_star_func)
+                L_star2 = self.max_general_utility(L_star_func,G,tau_star,case=2)
                 return G-tau_star*par.w*L_star2
 
         # Solve for optimal delta
@@ -243,43 +243,55 @@ class question1:
             print(f'Optimal G: {G_star:.2f}')
         else: 
             return G_star
-        
-    def optimal_tax(self,L_star_func,case=1):
+
+
+    # Define method to find optimal tax rate  
+    def optimal_tax(self,case=1):
         """ Find optimal tax rate to maximize utility function"""
 
-        # Utility function for the worker
-        if case == 1:
-            def obj(tau):
-                G = tau*self.par.w*obj(tau)
-                return self.max_general_utility(L_star_func,G,case=1)
-        else:
-            def obj(tau):
-                G = tau*self.par.w*obj(tau)
-                return self.max_general_utility(L_star_func,G,case=2)
+        # Generate G value
+        G_values = np.linspace(0.001, 7, 100)
 
+        # Create empty list to store the ex ante value
+        prev_utility = 0
 
-        # Equality constraint function
-        def constraint(tau, G):
-            return G - tau*self.par.w*obj(tau, G)
+        # Calculate ex ante value for each delta value
+        for G_val in G_values:
 
-        # Initial guess for the tax rate
-        tau0 = 0.5
+            # Utility function for the worker
+            if case == 1:
+                def obj(tau_val,L):
+                    return self.general_utility(G_val,L,tau_val)
+            else:
+                def obj(tau_val,L):
+                    return self.general_utility(G_val,L,tau_val)
 
-        # Define the optimization problem
-        problem = {'type': 'eq','fun': constraint}
+            # Initial guess for the tax rate
+            initial_guess = [0.4,10]
 
-        # Perform the optimization
-        result = optimize.minimize(obj,tau0,method='SLSQP')
+            # Perform the optimization
+            result = optimize.minimize(obj,initial_guess,method='Nelder-Mead')
 
-        # Retrieve the optimal tax rate
-        optimal_tax_rate = result.x[0]
+            # Retrieve the optimal tax rate and labor
+            optimal_tax_rate = result.x[0]
+            optimal_labor_supply = result.x[1]
 
-        # Evaluate the worker's utility at the optimal tax rate
-        optimal_utility = obj(optimal_tax_rate)
+            # Evaluate the worker's utility at the optimal tax rate
+            optimal_utility = obj(result.x[0], result.x[1])
+
+            if optimal_utility > prev_utility:
+                prev_utility = optimal_utility
+                opt_tax = optimal_tax_rate
+                opt_labor = optimal_labor_supply
+                Optimal_G = G_val
 
         # Print the results
-        print("Optimal Tax Rate:", optimal_tax_rate)
-        print("Optimal Utility:", optimal_utility)
+        print("Optimal Tax Rate:", opt_tax)
+        print("Optimal Utility:", prev_utility)
+        print("Optimal Labor Supply:", opt_labor)
+        print("Optimal Government Consumption:", Optimal_G)
+
+
 
     
 
