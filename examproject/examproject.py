@@ -197,6 +197,7 @@ class question1:
 
         par = self.par
 
+        # Define C
         C = par.kappa+(1-tau)*par.w*L
 
         if case == 1:
