@@ -4,8 +4,6 @@ import sympy as sm
 from types import SimpleNamespace
 from scipy import optimize
 
-
-
 ######## Question 1 ########
 
 class question1:
@@ -89,7 +87,7 @@ class question1:
 
 
     def utility(self,L_star_func,tau):
-        """ Calculate utility"""
+        """ Calculate utility """
 
         par = self.par
         par.tau = tau
@@ -107,7 +105,7 @@ class question1:
 
 
     def max_utility(self,L_star_func,do_print=False):
-        """ Find optimal tax rate to maximize utility function"""
+        """ Find optimal tax rate to maximize utility function """
 
         par = self.par
 
@@ -166,7 +164,7 @@ class question1:
         
 
     def general_utility(self,G,L,tau,case=1):
-        """ General utility function"""
+        """ General utility function """
 
         par = self.par
 
@@ -187,7 +185,7 @@ class question1:
 
 
     def max_general_utility(self,L_star_func,G,case=1,do_print=False):
-        """ Find optimal tax rate to maximize utility function"""
+        """ Find optimal tax rate to maximize utility function """
 
         par = self.par
 
@@ -217,7 +215,7 @@ class question1:
 
     # Define method to find optimal G given the tax rate
     def optimal_G(self,L_star_func,case=1,do_print=True):
-        """ Find optimal tax rate to maximize utility function"""
+        """ Find optimal tax rate to maximize utility function """
 
         par = self.par
 
@@ -247,7 +245,7 @@ class question1:
 
     # Define method to find optimal tax rate  
     def optimal_tax(self,case=1):
-        """ Find optimal tax rate to maximize utility function"""
+        """ Find optimal tax rate to maximize utility function """
 
         # Generate G value
         G_values = np.linspace(0.001, 7, 100)
@@ -291,9 +289,6 @@ class question1:
         print("Optimal Labor Supply:", opt_labor)
         print("Optimal Government Consumption:", Optimal_G)
 
-
-
-    
 
 ######## Question 2 ########
 
@@ -340,7 +335,7 @@ class question2:
 
     # Check if given solution matches numerical solution
     def check_numerical(self,kappa_vec):
-        """ Check if analytical solution is optimal"""
+        """ Check if analytical solution is optimal """
         
         par2 = self.par2
 
@@ -353,7 +348,7 @@ class question2:
 
     # Define the demand-shock
     def demand_shock(self):
-        """ Define path for demand shock"""
+        """ Define path for demand shock """
         
         par2 = self.par2
 
@@ -387,7 +382,7 @@ class question2:
 
     # Define ex post value of the hair salon
     def ex_post_value(self,log_kappa,l_path):
-        """ Calculate ex post value of the hair salon"""
+        """ Calculate ex post value of the hair salo """
 
         par2 = self.par2
 
@@ -409,7 +404,7 @@ class question2:
 
     # Define ex ante value of the hair salon
     def ex_ante_value(self,K,l_path,do_print=False):
-        """ Calculate ex ante value of the hair salon"""
+        """ Calculate ex ante value of the hair salon """
 
         par2 = self.par2
 
@@ -444,7 +439,7 @@ class question2:
 
     # Define new policy vector dependent on delta
     def l_vec2(self,delta):
-        """ Calculate new policy vector for labor supply"""
+        """ Calculate new policy vector for labor supply """
 
         par2 = self.par2
 
@@ -471,7 +466,7 @@ class question2:
 
     # Define function to find delta that maximize value
     def value_opt(self,do_print=False):
-        """ Find optimal delta to maximize value function"""
+        """ Find optimal delta to maximize value function """
 
         # Define objective function
         def obj(delta):
@@ -496,7 +491,7 @@ class question2:
         
     # Create plot for ex ante value given delta
     def delta_plot(self):
-        """ Create plot for value given delta"""
+        """ Create plot for value given delta """
         
         # Generate delta values
         delta_values = np.linspace(0.001, 0.999, 100)
@@ -586,7 +581,7 @@ class question3:
 
     # Define efined global optimizer with multi-start
     def refined_global_optimizer(self,bounds, tolerance, warmup_iters, max_iters):
-        """ Global optimizer with multi-start for griewank function"""   
+        """ Global optimizer with multi-start for griewank function """   
 
         # Step 1: Choose bounds for x and tolerance
         x_bounds = bounds
@@ -642,7 +637,7 @@ class question3:
 
     # Define method to plot initial guess given iteration
     def plot_starting_guess(self):
-        """ Plot initial guess for each iteration"""
+        """ Plot initial guess for each iteration """
 
         # Define bounds, tolerance, warmup and max iterations
         bounds = [-600, 600]
